@@ -1,25 +1,30 @@
 package com.jefferson.jsonview.dto;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
 public record UserDto(@JsonView(UserDtoViews.Public.class)
+                      @NotNull(message = "User dto: user id mustn't be null")
+                      @Positive(message = "User dto: user id must be positive")
                       Long id,
 
                       @JsonView(UserDtoViews.Public.class)
+                      @NotBlank(message = "User dto: username is null or empty")
                       String username,
 
                       @JsonView(UserDtoViews.Public.class)
+                      @NotBlank(message = "Email is empty.")
+                      @Email(message = "Invalid email format.")
                       String email,
 
                       @JsonView(UserDtoViews.WithOrders.class)
-                      List<OrderDto> orders,
-
-                      @JsonView(UserDtoViews.Public.class)
-                      LocalDateTime createdAt) {
+                      List<OrderDto> orders) {
 
     public List<OrderDto> orders() {
         return List.copyOf(orders);
