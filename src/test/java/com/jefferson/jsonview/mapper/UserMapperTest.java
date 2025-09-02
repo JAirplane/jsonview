@@ -28,7 +28,7 @@ public class UserMapperTest {
 
         OrderDto expectedOrderDto = new OrderDto(user.getId(), order.getOrderBucket());
 
-        UserDto expected = new UserDto(1L, "test name",
+        UserDto expected = new UserDto("test name",
                 "test@example.com", List.of(expectedOrderDto));
 
         UserDto actual = userMapper.toDtoWithOrders(user);
@@ -43,7 +43,7 @@ public class UserMapperTest {
         Order order = new Order(1L, user, "test data", OrderStatus.CREATED);
         user.getOrders().add(order);
 
-        UserDto expected = new UserDto(1L, "test name", "test@example.com", null);
+        UserDto expected = new UserDto("test name", "test@example.com", null);
 
         UserDto actual = userMapper.toDtoWithoutOrders(user);
 

@@ -9,6 +9,7 @@ import com.jefferson.jsonview.mapper.UserMapper;
 import com.jefferson.jsonview.model.Order;
 import com.jefferson.jsonview.model.User;
 import com.jefferson.jsonview.repository.UserRepository;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ public class UserService {
 
     @Autowired
     public UserService(UserRepository userRepository,
-                           UserMapper userMapper, OrderMapper orderMapper) {
+                       UserMapper userMapper, OrderMapper orderMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.orderMapper = orderMapper;
@@ -52,7 +53,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto createNewUser(@NotNull(message = "User dto mustn't be null") UserDto userDto) {
+    public UserDto createNewUser(@NotNull(message = "User dto mustn't be null") @Valid UserDto userDto) {
 
         User newUser = new User();
         newUser.setUsername(userDto.username());
@@ -64,10 +65,12 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto updateUserInfo(UserDto userDto) {
+    public UserDto updateUserInfo(@NotNull(message = "User id mustn't be null")
+                                      @Positive(message = "User id must be positive") Long userId,
+                                  @NotNull(message = "User dto mustn't be null") @Valid UserDto userDto) {
 
-        User user = userRepository.findById(userDto.id())
-                .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userDto.id()));
+        User user = userRepository.findByIdAndDeletedFalse(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userId));
         user.setUsername(userDto.username());
         user.setEmail(userDto.email());
 
@@ -77,9 +80,9 @@ public class UserService {
     }
 
     @Transactional
-    public void addOrder(OrderDto orderDto) {
+    public void addOrder(@NotNull(message = "Order dto mustn't be null") @Valid OrderDto orderDto) {
 
-        User user = userRepository.findById(orderDto.userId())
+        User user = userRepository.findByIdAndDeletedFalse(orderDto.userId())
                 .orElseThrow(() -> new UserNotFoundException("User not found for id: " + orderDto.userId()));
 
         Order order = orderMapper.toEntity(orderDto);
@@ -90,8 +93,9 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(Long userId) {
-        Optional<User> userOpt = userRepository.findById(userId);
+    public void deleteUser(@NotNull(message = "User id mustn't be null")
+                           @Positive(message = "User id must be positive") Long userId) {
+        Optional<User> userOpt = userRepository.findByIdAndDeletedFalse(userId);
         if(userOpt.isPresent()) {
             User user = userOpt.get();
             for(Order order: user.getOrders()) {
